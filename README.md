@@ -51,7 +51,7 @@ You can also send your API key with each request:
 ```python
 import cased
 
-cased.Event.publish("user.login", api_key="publish_test_c260ffa178db6d5953f11f747ecb7ee3")
+cased.Event.publish({"action": "user.login"}, api_key="publish_test_c260ffa178db6d5953f11f747ecb7ee3")
 ```
 
 (Setting an API key on a request takes precedence over both the global setting and the environmental variable setting).
@@ -119,14 +119,12 @@ By default, `list()` returns 25 items at a time. This can be adjusted,
 with a maximum of 50 items.
 
 ```python
-
 events = cased.Event.list(limit=10)
 ```
 
 You can get metadata:
 
 ```python
-
 events.total_count # Total count of objects
 events.total_pages # Total number of pages
 ```
@@ -134,7 +132,6 @@ events.total_pages # Total number of pages
 You can also get urls and page numbers to paginate the results.
 
 ```python
-
 events.next_page_url
 # > https://api.cased.com.com/api/events?page=3
 
@@ -151,7 +148,6 @@ events.last_page
 It is much easier to use the iterators provided by this library.
 
 ```python
-
 events = cased.Event.list()
 iterator = events.page_iter()
 for item in iterator:
@@ -168,7 +164,6 @@ You can control what events you get back from `list()` by using the `variables` 
 `variables` is a `dict` of fields which are then applied to a policy. For example:
 
 ```python
-
 events = cased.Event.list(variables={"team_id": "team-123"})
 ```
 
@@ -204,7 +199,6 @@ You can easily build a search query phrase from a Python dictionary, and then pa
 that to `list()`:
 
 ```python
-
 from cased import Query
 
 data = {"actor": "jill", "location": "Austria"}
@@ -244,7 +238,7 @@ A `ReliabilityEngine` adds extra resilience to the client by writing audit entri
 local datastore for later processing. This can be useful if, for whatever reason, your client
 is unable to reached Cased. A `ReliabilityEngine` can queue up events for later sending to Cased.
 
-A `ReliabilityEngine` has a `ReliabilityBackend` — right now
+A `ReliabilityEngine` has a `ReliabilityBackend` — right now
 this library includes a Redis implementation. A backend implements `add()`, which adds data to
 a datastore for later processing. You can implement your own by
 subclassing `cased.data.reliability.AbstractReliabilityBackend`.
@@ -253,13 +247,10 @@ It's very easy to set one up. You can set one globally using either a default st
 currently), or by using a class.
 
 ```
-
 cased.reliability_backend = "redis"
-
 ```
 
 or set a custom class:
-
 ```python
 cased.reliability_backend = MyCustomClass
 ```
@@ -283,7 +274,7 @@ in case your plugin needs to do some processing based on the audit entry data.
 cased.add_plugin(MyCustomPlugin)
 ```
 
-Here's an example — the default plugin that ships with this library:
+Here's an example — the default plugin that ships with this library:
 
 ```python
 class CasedDefaultPlugin(DataPlugin):
@@ -360,3 +351,4 @@ pytest
 ```
 
 Code formatting and linting is provided by [Black](https://black.readthedocs.io/en/stable/) and [Flake8](https://flake8.pycqa.org/en/latest/) respectively, so you may want to install them locally.
+
