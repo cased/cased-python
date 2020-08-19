@@ -4,6 +4,8 @@ import cased
 from cased.data.sensitive import SensitiveDataHandler, SensitiveDataProcessor
 
 username_regex = r"@([A-Za-z0-9_]+)"
+name_regex = r"Smith"
+
 
 event = {
     "actor": "some-actor",
@@ -22,6 +24,14 @@ event_with_multiple_keys_matching = {
     "action": "user.create",
     "new_username": "@someusername and also @anotherusername",
     "friend_username": "@friendusername",
+}
+
+event_with_multiple_keys_of_different_matches = {
+    "actor": "some-actor",
+    "action": "user.create",
+    "name": "Jane Smith",
+    "new_username": "@someusername",
+    "phone": "555-555-5555",
 }
 
 event_with_email_field = {
@@ -92,6 +102,14 @@ class TestSensitiveData(object):
         assert processor.audit_event == event
         assert processor.data_handlers == [handler]
 
+    def test_sensitive_data_processor_can_be_created_with_mutiple_handlers(self):
+        handler1 = SensitiveDataHandler("username", username_regex)
+        handler2 = SensitiveDataHandler("name", name_regex)
+
+        processor = SensitiveDataProcessor(event, [handler1, handler2])
+        assert processor.audit_event == event
+        assert processor.data_handlers == [handler1, handler2]
+
     def test_handlers_can_be_added_and_removed_globally(self):
         assert cased.sensitive_data_handlers == []
 
@@ -130,6 +148,36 @@ class TestSensitiveData(object):
                 {"begin": 23, "end": 39, "label": "username"},
             ]
         }
+
+    def test_ranges_from_event_works_with_multiple_handlers(self):
+        handler1 = SensitiveDataHandler("username", username_regex)
+        handler2 = SensitiveDataHandler("name", name_regex)
+
+        processor = SensitiveDataProcessor(
+            event_with_multiple_keys_of_different_matches, [handler1, handler2]
+        )
+
+        assert processor.process()[".cased"]["pii"] == {
+            "new_username": [{"begin": 0, "end": 13, "label": "username"}],
+            "name": [{"begin": 5, "end": 10, "label": "name"}],
+        }
+
+    def test_ranges_from_event_works_with_multiple_handlers_and_field_setting(self):
+        handler1 = SensitiveDataHandler("username", username_regex)
+        handler2 = SensitiveDataHandler("name", name_regex)
+        cased.add_sensitive_field("phone")
+
+        processor = SensitiveDataProcessor(
+            event_with_multiple_keys_of_different_matches, [handler1, handler2]
+        )
+
+        assert processor.process()[".cased"]["pii"] == {
+            "new_username": [{"begin": 0, "end": 13, "label": "username"}],
+            "name": [{"begin": 5, "end": 10, "label": "name"}],
+            "phone": [{"begin": 0, "end": 12, "label": "phone"}],
+        }
+
+        cased.sensitive_fields = set()
 
     def test_ranges_from_event_works_with_multiple_key_matches(self):
         handler = SensitiveDataHandler("username", username_regex)

@@ -54,7 +54,8 @@ class SensitiveDataProcessor:
         flat_events = traverse(self.audit_event)
 
         for handler in self.data_handlers:
-            ranges = self.ranges_from_event(flat_events, handler)
+            _ranges = self.ranges_from_event(flat_events, handler)
+            ranges.update(_ranges)
 
         for field in self.sensitive_fields:
             for key, value in flat_events.items():

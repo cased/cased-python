@@ -295,7 +295,7 @@ You can mark audit entry fields as _sensitive_ to mask PII. Just use the global 
 cased.sensitive_fields = {"username", "address"}
 ```
 
-Any field, in any audit event, that mathces one of those key name will be marked as
+Any field, in any audit event, that matches one of those key name will be marked as
 sensitive when sent to Cased.
 
 You can also mark _patterns_ in your audit trail dail as sensitive_in order to mask PII. To do so,
