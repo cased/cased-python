@@ -61,7 +61,7 @@ class Event(ListableResource):
             )
 
         log_info("Published to Cased: " + str(publish_data))
-        response = requestor.request("post", "/publish", publish_data)
+        response = requestor.request("post", "/", publish_data)
         return response
 
     @classmethod
