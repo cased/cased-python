@@ -1,5 +1,6 @@
 # ===================== cased-python ==========================
 import os
+from cased.data.context import Context
 
 # =============================================================
 # Package settings
@@ -104,6 +105,12 @@ def add_sensitive_field(field):
 def clear_sensitive_fields():
     sensitive_fields.clear()
 
+
+# =============================================================
+# Context
+# =============================================================
+
+context = Context
 
 # =============================================================
 # API Resources
