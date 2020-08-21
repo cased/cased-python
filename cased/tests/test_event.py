@@ -11,6 +11,10 @@ from cased.http import Requestor
 
 
 class TestEvent(object):
+    def teardown_method(self, method):
+        cased.Context.clear()
+        cased.clear_context_after_publishing = False
+
     def test_event_can_fetch(self):
         with mock_response():
             cased.policy_key = "cs_test_001"
@@ -146,6 +150,82 @@ class TestEvent(object):
             Event.publish({"user": "test"})
 
             # Confirm that "cased_id" and "timestamp" have been added to the request
+            cased.http.HTTPClient.make_request.assert_called_with(
+                "post",
+                ANY,
+                "cs_test_001",
+                {"user": "test", "cased_id": ANY, "timestamp": ANY},
+            )
+
+    def test_event_is_updated_with_context(self):
+        with mock_response():
+            cased.publish_key = "cs_test_001"
+
+            cased.Context.update({"country": "Austria"})
+
+            Event.publish({"user": "test"})
+
+            cased.http.HTTPClient.make_request.assert_called_with(
+                "post",
+                ANY,
+                "cs_test_001",
+                {
+                    "user": "test",
+                    "country": "Austria",
+                    "cased_id": ANY,
+                    "timestamp": ANY,
+                },
+            )
+
+    def test_event_is_updated_with_context_and_can_be_cleared(self):
+        with mock_response():
+            cased.publish_key = "cs_test_001"
+
+            cased.Context.update({"country": "Austria"})
+            Event.publish({"user": "test"})
+
+            cased.http.HTTPClient.make_request.assert_called_with(
+                "post",
+                ANY,
+                "cs_test_001",
+                {
+                    "user": "test",
+                    "country": "Austria",
+                    "cased_id": ANY,
+                    "timestamp": ANY,
+                },
+            )
+
+            cased.Context.clear()
+            Event.publish({"user": "test"})
+            cased.http.HTTPClient.make_request.assert_called_with(
+                "post",
+                ANY,
+                "cs_test_001",
+                {"user": "test", "cased_id": ANY, "timestamp": ANY},
+            )
+
+    def test_event_is_updated_with_context_and_context_cleared_if_set(self):
+        with mock_response():
+            cased.publish_key = "cs_test_001"
+            cased.clear_context_after_publishing = True
+
+            cased.Context.update({"country": "Austria"})
+            Event.publish({"user": "test"})
+
+            cased.http.HTTPClient.make_request.assert_called_with(
+                "post",
+                ANY,
+                "cs_test_001",
+                {
+                    "user": "test",
+                    "country": "Austria",
+                    "cased_id": ANY,
+                    "timestamp": ANY,
+                },
+            )
+
+            Event.publish({"user": "test"})
             cased.http.HTTPClient.make_request.assert_called_with(
                 "post",
                 ANY,

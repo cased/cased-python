@@ -40,6 +40,8 @@ publish_base = "https://publish.cased.com"
 
 disable_publishing = False
 
+clear_context_after_publishing = False
+
 
 # =============================================================
 # Logging
@@ -111,6 +113,7 @@ def clear_sensitive_fields():
 # =============================================================
 
 context = Context
+
 
 # =============================================================
 # API Resources

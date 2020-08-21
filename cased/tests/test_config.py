@@ -60,3 +60,13 @@ class TestConfig(object):
             "default": "policy_test_1",
             "secondary": "policy_test_2",
         }
+
+    def test_clear_after_publish_default_to_false(self):
+        assert not cased.clear_context_after_publishing
+
+    def test_clear_after_publish_default_can_be_set(self):
+        cased.clear_context_after_publishing = True
+        assert cased.clear_context_after_publishing
+
+        cased.clear_context_after_publishing = False
+        assert not cased.clear_context_after_publishing

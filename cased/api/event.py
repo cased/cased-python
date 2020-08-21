@@ -32,6 +32,10 @@ class Event(ListableResource):
             additions = instance.additions()
             publish_data.update(additions)
 
+        # Update with any context data
+        current_context = cased.context.current()
+        publish_data.update(current_context)
+
         # Update the .cased with any PII ranges
         processor = SensitiveDataProcessor(publish_data)
         publish_data = processor.process()
@@ -61,7 +65,15 @@ class Event(ListableResource):
             )
 
         log_info("Published to Cased: " + str(publish_data))
-        response = requestor.request("post", "/", publish_data)
+
+        try:
+            response = requestor.request("post", "/", publish_data)
+        except Exception:
+            raise
+        finally:
+            if cased.clear_context_after_publishing:
+                cased.context.clear()
+
         return response
 
     @classmethod
