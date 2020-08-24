@@ -177,6 +177,26 @@ class TestEvent(object):
                 },
             )
 
+    def test_event_local_publish_data_takes_precedence_over_context(self):
+        with mock_response():
+            cased.publish_key = "cs_test_001"
+
+            cased.Context.update({"country": "Austria", "user": "context-test-user"})
+
+            Event.publish({"user": "test"})
+
+            cased.http.HTTPClient.make_request.assert_called_with(
+                "post",
+                ANY,
+                "cs_test_001",
+                {
+                    "user": "test",
+                    "country": "Austria",
+                    "cased_id": ANY,
+                    "timestamp": ANY,
+                },
+            )
+
     def test_event_is_updated_with_context_and_can_be_cleared(self):
         with mock_response():
             cased.publish_key = "cs_test_001"

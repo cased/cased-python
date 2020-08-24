@@ -17,6 +17,12 @@ def log_info(message):
     logger.info(message)
 
 
+def log_error(message):
+    if cased.log_level in ["debug", "info", "error"]:
+        print(message, file=sys.stderr)
+    logger.error(message)
+
+
 def traverse(data):
     """
     Recursively traverse a nested dictionary (with potential nested values of dict, list, string;

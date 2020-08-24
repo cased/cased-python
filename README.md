@@ -327,7 +327,7 @@ cased.disable_publishing == True
 
 ## Logging
 
-You can enable logging for useful `info` and `debug` messages:
+You can enable logging for useful `error`, `info`, and `debug` messages:
 
 ```python
 import cased
