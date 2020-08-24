@@ -197,6 +197,57 @@ class TestEvent(object):
                 },
             )
 
+    def test_event_local_publish_data_handles_nested_list_updates_gracefully(self):
+        with mock_response():
+            cased.publish_key = "cs_test_001"
+
+            cased.Context.update(
+                {"country": "Austria", "users": ["user-one", "user-two"]}
+            )
+
+            Event.publish({"users": ["user-three"]})
+
+            cased.http.HTTPClient.make_request.assert_called_with(
+                "post",
+                ANY,
+                "cs_test_001",
+                {
+                    "users": ["user-one", "user-two", "user-three"],
+                    "country": "Austria",
+                    "cased_id": ANY,
+                    "timestamp": ANY,
+                },
+            )
+
+    def test_event_local_publish_data_handles_nested_dict_updates_gracefully(self):
+        with mock_response():
+            cased.publish_key = "cs_test_001"
+
+            cased.Context.update(
+                {
+                    "country": "Austria",
+                    "mappings": {"user-one": "123", "user-two": "456"},
+                }
+            )
+
+            Event.publish({"mappings": {"user-three": "789"}})
+
+            cased.http.HTTPClient.make_request.assert_called_with(
+                "post",
+                ANY,
+                "cs_test_001",
+                {
+                    "mappings": {
+                        "user-one": "123",
+                        "user-three": "789",
+                        "user-two": "456",
+                    },
+                    "country": "Austria",
+                    "cased_id": ANY,
+                    "timestamp": ANY,
+                },
+            )
+
     def test_event_is_updated_with_context_and_can_be_cleared(self):
         with mock_response():
             cased.publish_key = "cs_test_001"

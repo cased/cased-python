@@ -3,6 +3,8 @@ from datetime import datetime
 
 import cased
 import requests
+from deepmerge import always_merger
+
 
 from cased.http import Requestor
 from cased.util import log_info, log_error
@@ -34,7 +36,7 @@ class Event(ListableResource):
 
         # Include context data, overriding it with any local publish data
         current_context = cased.context.current()
-        current_context.update(publish_data)
+        always_merger.merge(current_context, publish_data)
 
         # Update the .cased with any PII ranges
         processor = SensitiveDataProcessor(current_context)
