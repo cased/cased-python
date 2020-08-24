@@ -287,6 +287,48 @@ class CasedDefaultPlugin(DataPlugin):
         }
 ```
 
+### Context
+
+You can push data to a library-provided thread-local `Context` dictionary, allowing you to easily
+build up events before sending them to Cased.
+
+```python
+# Set some contextual information
+cased.Context.update({"location": "Austria"})
+cased.Context.update({"valid": True})
+```
+
+This information will then be included in any subsequent `publish()`. For example, now calling:
+
+```python
+cased.Event.publish({"username": "blake"})
+```
+
+will publish:
+
+```python
+{
+  "username": "blake",
+  "valid": True
+  "location": "Austria",
+  ...
+}
+```
+
+You can clear the context with:
+
+```python
+cased.Context.clear()
+```
+
+Additionally, you can have `cased-python` automatically clear the context after every `publish()` action
+with the global setting:
+
+```python
+cased.clear_context_after_publishing = True
+```
+
+
 ### Sensitive Data
 
 You can mark audit entry fields as _sensitive_ to mask PII. Just use the global set:
