@@ -11,6 +11,10 @@ from cased.http import Requestor
 
 
 class TestEvent(object):
+    def teardown_method(self, method):
+        cased.Context.clear()
+        cased.clear_context_after_publishing = False
+
     def test_event_can_fetch(self):
         with mock_response():
             cased.policy_key = "cs_test_001"
@@ -146,6 +150,202 @@ class TestEvent(object):
             Event.publish({"user": "test"})
 
             # Confirm that "cased_id" and "timestamp" have been added to the request
+            cased.http.HTTPClient.make_request.assert_called_with(
+                "post",
+                ANY,
+                "cs_test_001",
+                {"user": "test", "cased_id": ANY, "timestamp": ANY},
+            )
+
+    def test_event_is_updated_with_context(self):
+        with mock_response():
+            cased.publish_key = "cs_test_001"
+
+            cased.Context.update({"country": "Austria"})
+
+            Event.publish({"user": "test"})
+
+            cased.http.HTTPClient.make_request.assert_called_with(
+                "post",
+                ANY,
+                "cs_test_001",
+                {
+                    "user": "test",
+                    "country": "Austria",
+                    "cased_id": ANY,
+                    "timestamp": ANY,
+                },
+            )
+
+    def test_event_local_publish_data_takes_precedence_over_context(self):
+        with mock_response():
+            cased.publish_key = "cs_test_001"
+
+            cased.Context.update({"country": "Austria", "user": "context-test-user"})
+
+            Event.publish({"user": "test"})
+
+            cased.http.HTTPClient.make_request.assert_called_with(
+                "post",
+                ANY,
+                "cs_test_001",
+                {
+                    "user": "test",
+                    "country": "Austria",
+                    "cased_id": ANY,
+                    "timestamp": ANY,
+                },
+            )
+
+    def test_event_local_publish_data_handles_nested_list_updates_gracefully(self):
+        with mock_response():
+            cased.publish_key = "cs_test_001"
+
+            cased.Context.update(
+                {"country": "Austria", "users": ["user-one", "user-two"]}
+            )
+
+            Event.publish({"users": ["user-three"]})
+
+            cased.http.HTTPClient.make_request.assert_called_with(
+                "post",
+                ANY,
+                "cs_test_001",
+                {
+                    "users": ["user-one", "user-two", "user-three"],
+                    "country": "Austria",
+                    "cased_id": ANY,
+                    "timestamp": ANY,
+                },
+            )
+
+    def test_event_local_publish_data_handles_nested_dict_updates_gracefully(self):
+        with mock_response():
+            cased.publish_key = "cs_test_001"
+
+            cased.Context.update(
+                {
+                    "country": "Austria",
+                    "mappings": {"user-one": "123", "user-two": "456"},
+                }
+            )
+
+            Event.publish({"mappings": {"user-three": "789"}})
+
+            cased.http.HTTPClient.make_request.assert_called_with(
+                "post",
+                ANY,
+                "cs_test_001",
+                {
+                    "mappings": {
+                        "user-one": "123",
+                        "user-three": "789",
+                        "user-two": "456",
+                    },
+                    "country": "Austria",
+                    "cased_id": ANY,
+                    "timestamp": ANY,
+                },
+            )
+
+    def test_event_local_publish_data_handles_deeply_nested_updates(self):
+        with mock_response():
+            cased.publish_key = "cs_test_001"
+
+            cased.Context.update(
+                {
+                    "mappings": {"user-one": "123", "user-two": "456"},
+                    "location": {
+                        "country": "test-country-1",
+                        "divisions": [
+                            "test-division-1",
+                            "test-division-2",
+                            "test-division-3",
+                        ],
+                    },
+                }
+            )
+
+            Event.publish(
+                {
+                    "mappings": {"user-three": "789"},
+                    "location": {"city": "test-city-1"},
+                }
+            )
+
+            cased.http.HTTPClient.make_request.assert_called_with(
+                "post",
+                ANY,
+                "cs_test_001",
+                {
+                    "mappings": {
+                        "user-one": "123",
+                        "user-three": "789",
+                        "user-two": "456",
+                    },
+                    "location": {
+                        "city": "test-city-1",
+                        "country": "test-country-1",
+                        "divisions": [
+                            "test-division-1",
+                            "test-division-2",
+                            "test-division-3",
+                        ],
+                    },
+                    "cased_id": ANY,
+                    "timestamp": ANY,
+                },
+            )
+
+    def test_event_is_updated_with_context_and_can_be_cleared(self):
+        with mock_response():
+            cased.publish_key = "cs_test_001"
+
+            cased.Context.update({"country": "Austria"})
+            Event.publish({"user": "test"})
+
+            cased.http.HTTPClient.make_request.assert_called_with(
+                "post",
+                ANY,
+                "cs_test_001",
+                {
+                    "user": "test",
+                    "country": "Austria",
+                    "cased_id": ANY,
+                    "timestamp": ANY,
+                },
+            )
+
+            cased.Context.clear()
+            Event.publish({"user": "test"})
+            cased.http.HTTPClient.make_request.assert_called_with(
+                "post",
+                ANY,
+                "cs_test_001",
+                {"user": "test", "cased_id": ANY, "timestamp": ANY},
+            )
+
+    def test_event_is_updated_with_context_and_context_cleared_if_set(self):
+        with mock_response():
+            cased.publish_key = "cs_test_001"
+            cased.clear_context_after_publishing = True
+
+            cased.Context.update({"country": "Austria"})
+            Event.publish({"user": "test"})
+
+            cased.http.HTTPClient.make_request.assert_called_with(
+                "post",
+                ANY,
+                "cs_test_001",
+                {
+                    "user": "test",
+                    "country": "Austria",
+                    "cased_id": ANY,
+                    "timestamp": ANY,
+                },
+            )
+
+            Event.publish({"user": "test"})
             cased.http.HTTPClient.make_request.assert_called_with(
                 "post",
                 ANY,

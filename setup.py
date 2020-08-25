@@ -25,6 +25,7 @@ setup(
         "pytest-xdist",
         "freezegun",
         "redis",
+        "deepmerge",
     ],
     project_urls={
         "Bug Tracker": "https://github.com/cased/cased-python/issues",

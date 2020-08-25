@@ -3,9 +3,11 @@ from datetime import datetime
 
 import cased
 import requests
+from deepmerge import always_merger
+
 
 from cased.http import Requestor
-from cased.util import log_info
+from cased.util import log_info, log_error
 
 from cased.api.abstract import ListableResource
 from cased.api.abstract.results_list import ResultsList
@@ -32,9 +34,13 @@ class Event(ListableResource):
             additions = instance.additions()
             publish_data.update(additions)
 
+        # Include context data, overriding it with any local publish data
+        current_context = cased.context.current()
+        always_merger.merge(current_context, publish_data)
+
         # Update the .cased with any PII ranges
-        processor = SensitiveDataProcessor(publish_data)
-        publish_data = processor.process()
+        processor = SensitiveDataProcessor(current_context)
+        final_publish_data = processor.process()
 
         # Add the item to a ReliabilityEngine backend. The backend can be configured
         # with a "backend" keyword arg passed to publish(), or with the global config.
@@ -60,8 +66,17 @@ class Event(ListableResource):
                 )
             )
 
-        log_info("Published to Cased: " + str(publish_data))
-        response = requestor.request("post", "/", publish_data)
+        log_info("Published to Cased: " + str(final_publish_data))
+
+        try:
+            response = requestor.request("post", "/", final_publish_data)
+        except Exception as e:
+            log_error(e)
+            raise
+        finally:
+            if cased.clear_context_after_publishing:
+                cased.context.clear()
+
         return response
 
     @classmethod
