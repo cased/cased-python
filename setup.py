@@ -6,7 +6,7 @@ from setuptools.command.test import test as TestCommand
 
 setup(
     name="cased",
-    version="0.3.3",
+    version="0.3.4",
     description="Python library for Cased",
     author="Cased",
     author_email="support@cased.com",
@@ -25,6 +25,7 @@ setup(
         "pytest-xdist",
         "freezegun",
         "redis",
+        "deepmerge",
     ],
     project_urls={
         "Bug Tracker": "https://github.com/cased/cased-python/issues",

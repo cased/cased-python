@@ -5,7 +5,7 @@ from cased.data.context import Context
 # =============================================================
 # Package settings
 # =============================================================
-VERSION = "0.3.3"
+VERSION = "0.3.4"
 APP_NAME = "Cased"
 
 
@@ -39,6 +39,8 @@ api_base = "https://api.cased.com"
 publish_base = "https://publish.cased.com"
 
 disable_publishing = False
+
+clear_context_after_publishing = False
 
 
 # =============================================================
@@ -111,6 +113,7 @@ def clear_sensitive_fields():
 # =============================================================
 
 context = Context
+
 
 # =============================================================
 # API Resources
