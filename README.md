@@ -309,7 +309,7 @@ will publish:
 ```python
 {
   "username": "blake",
-  "valid": True
+  "valid": True,
   "location": "Austria",
   ...
 }
@@ -393,4 +393,3 @@ pytest
 ```
 
 Code formatting and linting is provided by [Black](https://black.readthedocs.io/en/stable/) and [Flake8](https://flake8.pycqa.org/en/latest/) respectively, so you may want to install them locally.
-
