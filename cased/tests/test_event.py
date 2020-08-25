@@ -248,6 +248,55 @@ class TestEvent(object):
                 },
             )
 
+    def test_event_local_publish_data_handles_deeply_nested_updates(self):
+        with mock_response():
+            cased.publish_key = "cs_test_001"
+
+            cased.Context.update(
+                {
+                    "mappings": {"user-one": "123", "user-two": "456"},
+                    "location": {
+                        "country": "test-country-1",
+                        "divisions": [
+                            "test-division-1",
+                            "test-division-2",
+                            "test-division-3",
+                        ],
+                    },
+                }
+            )
+
+            Event.publish(
+                {
+                    "mappings": {"user-three": "789"},
+                    "location": {"city": "test-city-1"},
+                }
+            )
+
+            cased.http.HTTPClient.make_request.assert_called_with(
+                "post",
+                ANY,
+                "cs_test_001",
+                {
+                    "mappings": {
+                        "user-one": "123",
+                        "user-three": "789",
+                        "user-two": "456",
+                    },
+                    "location": {
+                        "city": "test-city-1",
+                        "country": "test-country-1",
+                        "divisions": [
+                            "test-division-1",
+                            "test-division-2",
+                            "test-division-3",
+                        ],
+                    },
+                    "cased_id": ANY,
+                    "timestamp": ANY,
+                },
+            )
+
     def test_event_is_updated_with_context_and_can_be_cleared(self):
         with mock_response():
             cased.publish_key = "cs_test_001"
