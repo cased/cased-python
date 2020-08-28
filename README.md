@@ -356,7 +356,15 @@ Add it globally:
 cased.add_handler(handler)
 ```
 
-Now any data you send that matches that pattern with will be marked as PII when sent to Cased.
+Now any data you send that matches that pattern with will be marked as PII when sent to Cased, and masked in the Cased UI.
+
+You can also _redact_ sensitive data from even being sent to Cased, using the `redact_before_publishing` setting.
+When enabled, this setting redacts any configured sensitive data prior to publishing of event.
+Sensitive data characters will be replaced with `X`. Set globally:
+
+```python
+redact_before_publishing = False
+```
 
 ### Disable Publishing
 
