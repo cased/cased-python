@@ -158,7 +158,7 @@ class TestSensitiveData(object):
         handler2 = SensitiveDataHandler("name", name_regex)
 
         processor = SensitiveDataProcessor(
-            event_with_multiple_keys_of_different_matches, [handler1, handler2]
+            event_with_multiple_keys_of_different_matches.copy(), [handler1, handler2]
         )
 
         assert processor.process()[".cased"]["pii"] == {
@@ -172,7 +172,7 @@ class TestSensitiveData(object):
         cased.add_sensitive_field("phone")
 
         processor = SensitiveDataProcessor(
-            event_with_multiple_keys_of_different_matches, [handler1, handler2]
+            event_with_multiple_keys_of_different_matches.copy(), [handler1, handler2]
         )
 
         assert processor.process()[".cased"]["pii"] == {
@@ -199,7 +199,23 @@ class TestSensitiveData(object):
             ],
         }
 
-    def test_add_ranges_to_event(self):
+    def test_add_ranges_to_events(self):
+        handler = SensitiveDataHandler("username", username_regex)
+        processor = SensitiveDataProcessor(event.copy(), [handler])
+        ranges = {"new_username": [{"begin": 0, "end": 13, "label": "username"}]}
+
+        assert processor.add_ranges_to_event(ranges) == {
+            ".cased": {
+                "pii": {
+                    "new_username": [{"begin": 0, "end": 13, "label": "username"}],
+                },
+            },
+            "action": "user.create",
+            "actor": "some-actor",
+            "new_username": "@someusername",
+        }
+
+    def test_add_ranges_to_event_with_multiple_key_matches(self):
         handler = SensitiveDataHandler("username", username_regex)
         processor = SensitiveDataProcessor(
             event_with_multiple_keys_matching.copy(), [handler]
@@ -247,6 +263,51 @@ class TestSensitiveData(object):
             "actor": "some-actor",
             "friend_username": "XXXXXXXXXXXXXXX",
             "new_username": "XXXXXXXXXXXXX and also XXXXXXXXXXXXXXXX",
+        }
+
+    def test_redact_data_with_multiple_key_matches(self):
+        handler = SensitiveDataHandler("username", username_regex)
+        processor = SensitiveDataProcessor(
+            event_with_multiple_keys_matching.copy(), [handler]
+        )
+
+        ranges = {
+            "friend_username": [{"begin": 0, "end": 15, "label": "username"}],
+            "new_username": [
+                {"begin": 0, "end": 13, "label": "username"},
+                {"begin": 23, "end": 39, "label": "username"},
+            ],
+        }
+
+        assert processor.redact_data(ranges) == {
+            "action": "user.create",
+            "actor": "some-actor",
+            "friend_username": "XXXXXXXXXXXXXXX",
+            "new_username": "XXXXXXXXXXXXX and also XXXXXXXXXXXXXXXX",
+        }
+
+    def test_redact_data_with_multiple_handlers(self):
+        cased.redact_before_publishing = True
+
+        handler1 = SensitiveDataHandler("username", username_regex)
+        handler2 = SensitiveDataHandler("name", name_regex)
+
+        processor = SensitiveDataProcessor(
+            event_with_multiple_keys_of_different_matches.copy(), [handler1, handler2]
+        )
+
+        assert processor.process() == {
+            ".cased": {
+                "pii": {
+                    "new_username": [{"begin": 0, "end": 13, "label": "username"}],
+                    "name": [{"begin": 5, "end": 10, "label": "name"}],
+                }
+            },
+            "name": "Jane XXXXX",
+            "action": "user.create",
+            "actor": "some-actor",
+            "phone": "555-555-5555",
+            "new_username": "XXXXXXXXXXXXX",
         }
 
     def test_process_does_everything_needed(self):
