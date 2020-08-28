@@ -5,7 +5,7 @@ from cased.data.context import Context
 # =============================================================
 # Package settings
 # =============================================================
-VERSION = "0.3.4"
+VERSION = "0.3.5"
 APP_NAME = "Cased"
 
 
