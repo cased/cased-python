@@ -40,14 +40,18 @@ publish_base = "https://publish.cased.com"
 
 disable_publishing = False
 
+# When enabled, clear the Context data after publishing.
 clear_context_after_publishing = False
 
+# When enabled, this setting redacts any configured sensitive data prior
+# to publishing of event. Sensitive data characters will be replaced with `X`.
+redact_before_publishing = False
 
 # =============================================================
 # Logging
 # =============================================================
 
-log_level = None  # ["debug", "info"]
+log_level = None  # ["debug", "info", "error"]
 
 
 # =============================================================
