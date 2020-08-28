@@ -63,6 +63,9 @@ class SensitiveDataProcessor:
                     ranges[key] = [{"label": field, "begin": 0, "end": len(value)}]
 
         if ranges:
+            if cased.redact_before_publishing:
+                self.redact_data(ranges)
+
             return self.add_ranges_to_event(ranges)
         else:
             # Nothing added, just return the original event
@@ -101,4 +104,24 @@ class SensitiveDataProcessor:
             audit_event[".cased"] = {}
 
         audit_event[".cased"]["pii"] = pii
+        return audit_event
+
+    def redact_data(self, ranges):
+        audit_event = self.audit_event
+
+        for k, v in ranges.items():
+            # Get the list of sensitive data in this field
+            data_list = ranges.get(k)
+
+            for data_range in data_list:
+                begin = data_range.get("begin")
+                end = data_range.get("end")
+
+                # find the key in the audit_event
+                field_value = audit_event.get(k)
+                redaction_length = end - begin
+                redact_string = "X" * redaction_length
+                new_value = redact_string.join([field_value[:begin], field_value[end:]])
+                audit_event[k] = new_value
+
         return audit_event

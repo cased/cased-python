@@ -42,6 +42,7 @@ disable_publishing = False
 
 clear_context_after_publishing = False
 
+redact_before_publishing = False
 
 # =============================================================
 # Logging

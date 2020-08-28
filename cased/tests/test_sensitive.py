@@ -49,6 +49,10 @@ event_with_email_and_phone_field = {
 
 
 class TestSensitiveData(object):
+    def teardown_method(self, method):
+        cased.Context.clear()
+        cased.redact_before_publishing = False
+
     def test_data_handler_can_be_created(self):
         handler = SensitiveDataHandler("username", username_regex)
         assert handler.label == "username"
@@ -181,10 +185,12 @@ class TestSensitiveData(object):
 
     def test_ranges_from_event_works_with_multiple_key_matches(self):
         handler = SensitiveDataHandler("username", username_regex)
-        processor = SensitiveDataProcessor(event_with_multiple_keys_matching, [handler])
+        processor = SensitiveDataProcessor(
+            event_with_multiple_keys_matching.copy(), [handler]
+        )
 
         assert processor.ranges_from_event(
-            event_with_multiple_keys_matching, handler
+            event_with_multiple_keys_matching.copy(), handler
         ) == {
             "friend_username": [{"begin": 0, "end": 15, "label": "username"}],
             "new_username": [
@@ -195,7 +201,9 @@ class TestSensitiveData(object):
 
     def test_add_ranges_to_event(self):
         handler = SensitiveDataHandler("username", username_regex)
-        processor = SensitiveDataProcessor(event_with_multiple_keys_matching, [handler])
+        processor = SensitiveDataProcessor(
+            event_with_multiple_keys_matching.copy(), [handler]
+        )
         ranges = {
             "friend_username": [{"begin": 0, "end": 15, "label": "username"}],
             "new_username": [
@@ -220,9 +228,32 @@ class TestSensitiveData(object):
             "new_username": "@someusername and also @anotherusername",
         }
 
+    def test_redact_data(self):
+        handler = SensitiveDataHandler("username", username_regex)
+        processor = SensitiveDataProcessor(
+            event_with_multiple_keys_matching.copy(), [handler]
+        )
+
+        ranges = {
+            "friend_username": [{"begin": 0, "end": 15, "label": "username"}],
+            "new_username": [
+                {"begin": 0, "end": 13, "label": "username"},
+                {"begin": 23, "end": 39, "label": "username"},
+            ],
+        }
+
+        assert processor.redact_data(ranges) == {
+            "action": "user.create",
+            "actor": "some-actor",
+            "friend_username": "XXXXXXXXXXXXXXX",
+            "new_username": "XXXXXXXXXXXXX and also XXXXXXXXXXXXXXXX",
+        }
+
     def test_process_does_everything_needed(self):
         handler = SensitiveDataHandler("username", username_regex)
-        processor = SensitiveDataProcessor(event_with_multiple_keys_matching, [handler])
+        processor = SensitiveDataProcessor(
+            event_with_multiple_keys_matching.copy(), [handler]
+        )
         assert processor.process() == {
             ".cased": {
                 "pii": {
@@ -237,6 +268,28 @@ class TestSensitiveData(object):
             "actor": "some-actor",
             "friend_username": "@friendusername",
             "new_username": "@someusername and also @anotherusername",
+        }
+
+    def test_process_does_everything_needed_with_redact_configured(self):
+        cased.redact_before_publishing = True
+        handler = SensitiveDataHandler("username", username_regex)
+        processor = SensitiveDataProcessor(
+            event_with_multiple_keys_matching.copy(), [handler]
+        )
+        assert processor.process() == {
+            ".cased": {
+                "pii": {
+                    "friend_username": [{"begin": 0, "end": 15, "label": "username"}],
+                    "new_username": [
+                        {"begin": 0, "end": 13, "label": "username"},
+                        {"begin": 23, "end": 39, "label": "username"},
+                    ],
+                }
+            },
+            "action": "user.create",
+            "actor": "some-actor",
+            "friend_username": "XXXXXXXXXXXXXXX",
+            "new_username": "XXXXXXXXXXXXX and also XXXXXXXXXXXXXXXX",
         }
 
     def test_no_fields_are_marked_as_sensitive_by_default(self):
