@@ -78,6 +78,15 @@ headers_3 = {
     "Link": '<https://api.cased.com.com/api/events?page=1>; rel="first", <https://api.cased.com.com/api/events?page=2>; rel="last", <https://api.cased.com.com/api/events?page=2>; rel="next"',
 }
 
+# No next or previous
+headers_4 = {
+    "Date": "Thu, 04 Jun 2020 03:31:21 GMT",
+    "Content-Type": "application/json; charset=utf-8",
+    "Server": "nginx/1.17.10",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Link": '<https://api.cased.com.com/api/events?page=1>; rel="first", <https://api.cased.com.com/api/events?page=1>; rel="last"',
+}
+
 
 class MockInitialListResponse(object):
     @property
@@ -89,8 +98,22 @@ class MockInitialListResponse(object):
         return data
 
 
+class MockLimitedListResponse(object):
+    @property
+    def headers(self):
+        return headers_4
+
+    def json(self):
+        data = {"total_pages": 1, "total_count": 5, "results": results_1}
+        return data
+
+
 response = MockInitialListResponse()
 list_obj = ResultsList(response, Event)
+
+
+response2 = MockLimitedListResponse()
+list_obj2 = ResultsList(response2, Event)
 
 
 class TestListObject(object):
@@ -134,6 +157,39 @@ class TestListObject(object):
     def test_results_list_has_has_more_boolen(self):
         assert list_obj.has_more()
 
+    def test_limited_results_list_has_first_page(self):
+        assert list_obj2.first_page == 1
+
+    def test_limited_results_list_has_last_page_url(self):
+        assert list_obj2.last_page_url == "https://api.cased.com.com/api/events?page=1"
+
+    def test_limited_results_list_has_last_page(self):
+        assert list_obj2.last_page == 1
+
+    def test_limited_results_list_has_no_next_page_url(self):
+        assert list_obj2.next_page_url == None
+
+    def test_limited_results_list_no_next_page(self):
+        assert list_obj2.next_page == None
+
+    def test_limited_results_list_has_no_prev_page_url(self):
+        assert list_obj2.prev_page_url == None
+
+    def test_limited_results_list_has_no_prev_page(self):
+        assert list_obj2.prev_page == None
+
+    def test_limited_results_list_has_results(self):
+        assert list_obj2.results == results_1
+
+    def test_limited_results_list_has_total_pages(self):
+        assert list_obj2.total_pages == 1
+
+    def test_limited_results_list_has_total_count(self):
+        assert list_obj2.total_count == 5
+
+    def test_limited_results_list_has_has_more_boolen(self):
+        assert list_obj2.has_more() == False
+
     def test_fetch_next(self):
         from cased.tests.util import mock_response
 
@@ -161,6 +217,23 @@ class TestListObject(object):
             next_result = iterator.__next__()
 
             assert next_result == results_2
+
+    def test_page_iter_can_iterate_through_results_of_single_page(self):
+        from cased.tests.util import mock_response
+
+        data = {
+            "total_pages": 1,
+            "total_count": 4,
+            "results": results_1,
+        }  # use the actual test values here since we're testing the iterator
+
+        with mock_response(headers=headers_4, json_data=data):
+            cased.policy_key = "cs_test_001"
+
+            iterator = list_obj.page_iter()
+            next_result = iterator.__next__()
+
+            assert next_result == results_1
 
     def test_page_iter_works_with_next(self):
         from cased.tests.util import mock_response
