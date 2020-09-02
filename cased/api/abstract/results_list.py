@@ -80,8 +80,12 @@ class ResultsList:
         parsed = urlparse.urlparse(url)
         query_params = parse_qs(parsed.query)
 
-        page_number = query_params.get("page")[0]
-        return int(page_number)
+        page_number = query_params.get("page")
+        if page_number:
+            number = page_number[0]
+            return int(number)
+        else:
+            return None
 
     def page_iter(self):
         page = self
