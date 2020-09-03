@@ -13,15 +13,11 @@
 
 ## Installation
 
-The recommended way to install the Cased library module is to use `pipenv` (or just pip itself):
+Until open-source release, you can install `cased-python` directly from the repository. It's available for vendoring,
+self-hosting, or bundling with your application.
 
 ```
-pipenv install cased
-```
-
-You can also use the classic:
-
-```
+git clone https://github.com/cased/cased-python.git
 python3 setup.py install
 ```
 
