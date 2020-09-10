@@ -48,6 +48,21 @@ clear_context_after_publishing = False
 redact_before_publishing = False
 
 # =============================================================
+# Additional publishers
+# =============================================================
+
+additional_publishers = []
+
+
+def add_publisher(publisher):
+    additional_publishers.append(publisher)
+
+
+def remove_publisher(publisher):
+    additional_publishers.remove(publisher)
+
+
+# =============================================================
 # Logging
 # =============================================================
 

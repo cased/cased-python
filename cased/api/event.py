@@ -77,6 +77,11 @@ class Event(ListableResource):
             if cased.clear_context_after_publishing:
                 cased.context.clear()
 
+        # Post-send, also publish the item to any additional publishers
+        additional_publishers = cased.additional_publishers
+        for publisher in additional_publishers:
+            publisher.publish(final_publish_data)
+
         return response
 
     @classmethod
