@@ -26,6 +26,11 @@ class MockPublisher(object):
         return {}
 
 
+class EmptyClass:
+    def __init__(self):
+        pass
+
+
 # HTTP Response Mock
 def mock_response(
     status_code=200, content="response content", headers={}, json_data=None, **params

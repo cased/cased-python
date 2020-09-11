@@ -77,7 +77,7 @@ class Event(ListableResource):
                 try:
                     publisher.publish(final_publish_data)
                 except AttributeError:
-                    raise Exception("Publisher must implement publish()")
+                    raise PublisherException("Publisher must implement publish()")
 
         except Exception as e:
             log_error(e)
@@ -108,3 +108,7 @@ class Event(ListableResource):
     @classmethod
     def klass(cls):
         return cls
+
+
+class PublisherException(Exception):
+    pass

@@ -6,8 +6,13 @@ import pytest
 import cased
 
 from cased.data.reliability import ReliabilityEngineError
-from cased.tests.util import mock_response, SimpleReliabilityBackend, MockPublisher
-from cased.api.event import Event
+from cased.tests.util import (
+    mock_response,
+    SimpleReliabilityBackend,
+    MockPublisher,
+    EmptyClass,
+)
+from cased.api.event import Event, PublisherException
 from cased.data.query import Query
 from cased.http import Requestor
 
@@ -16,6 +21,7 @@ class TestEvent(object):
     def teardown_method(self, method):
         cased.Context.clear()
         cased.clear_context_after_publishing = False
+        cased.additional_publishers = []
 
     def test_event_can_fetch(self):
         with mock_response():
@@ -194,8 +200,6 @@ class TestEvent(object):
                     {"user": "test", "cased_id": ANY, "timestamp": ANY}
                 )
 
-            cased.remove_publisher(pub)
-
     def test_event_publish_does_not_publish_to_additional_unless_given(self):
         with mock_response():
             cased.publish_key = "cs_test_001"
@@ -207,6 +211,16 @@ class TestEvent(object):
 
                 # Confirm publish is not called on the added publisher
                 assert not wrapped_publish.called
+
+    def test_event_publish_raised_if_publisher_does_not_implement_publish(self):
+        with mock_response():
+            cased.publish_key = "cs_test_001"
+
+            empty = EmptyClass()
+            cased.add_publisher(empty)
+
+            with pytest.raises(PublisherException):
+                Event.publish({"user": "test"})
 
     def test_event_local_publish_data_takes_precedence_over_context(self):
         with mock_response():
