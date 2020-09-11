@@ -4,6 +4,8 @@ import sys
 import pytest
 import cased
 
+from cased.tests.util import MockPublisher
+
 
 def reload_config():
     """
@@ -70,3 +72,20 @@ class TestConfig(object):
 
         cased.clear_context_after_publishing = False
         assert not cased.clear_context_after_publishing
+
+    def test_publishers_can_added(self):
+        reload_config()
+        assert cased.additional_publishers == []
+        pub = MockPublisher()
+        cased.add_publisher(pub)
+        assert cased.additional_publishers == [pub]
+
+    def test_publishers_can_remove(self):
+        reload_config()
+        assert cased.additional_publishers == []
+        pub = MockPublisher()
+
+        cased.add_publisher(pub)
+        assert cased.additional_publishers == [pub]
+        cased.remove_publisher(pub)
+        assert cased.additional_publishers == []

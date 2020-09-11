@@ -1,10 +1,12 @@
 from unittest.mock import ANY
+from unittest.mock import patch
+
 import pytest
 
 import cased
 
 from cased.data.reliability import ReliabilityEngineError
-from cased.tests.util import mock_response, SimpleReliabilityBackend
+from cased.tests.util import mock_response, SimpleReliabilityBackend, MockPublisher
 from cased.api.event import Event
 from cased.data.query import Query
 from cased.http import Requestor
@@ -176,6 +178,35 @@ class TestEvent(object):
                     "timestamp": ANY,
                 },
             )
+
+    def test_event_publish_publishes_to_additional(self):
+        with mock_response():
+            cased.publish_key = "cs_test_001"
+
+            pub = MockPublisher()
+            cased.add_publisher(pub)
+
+            with patch.object(pub, "publish", wraps=pub.publish) as wrapped_publish:
+                Event.publish({"user": "test"})
+
+                # Confirm publish is called on the added publisher
+                wrapped_publish.assert_called_with(
+                    {"user": "test", "cased_id": ANY, "timestamp": ANY}
+                )
+
+            cased.remove_publisher(pub)
+
+    def test_event_publish_does_not_publish_to_additional_unless_given(self):
+        with mock_response():
+            cased.publish_key = "cs_test_001"
+
+            pub = MockPublisher()
+
+            with patch.object(pub, "publish", wraps=pub.publish) as wrapped_publish:
+                Event.publish({"user": "test"})
+
+                # Confirm publish is not called on the added publisher
+                assert not wrapped_publish.called
 
     def test_event_local_publish_data_takes_precedence_over_context(self):
         with mock_response():
@@ -408,7 +439,7 @@ class TestEvent(object):
                 {"per_page": 25, "phrase": "(actor:test)"},
             )
 
-    def test_event_list_by_action_request_has_correct_paramaters(self,):
+    def test_event_list_by_action_request_has_correct_paramaters(self):
         with mock_response():
             cased.policy_key = "cs_test_001"
 
@@ -421,7 +452,7 @@ class TestEvent(object):
                 {"per_page": 25, "phrase": "(action:test-event)"},
             )
 
-    def test_event_list_by_action_request_api_key_can_be_overrode(self,):
+    def test_event_list_by_action_request_api_key_can_be_overrode(self):
         with mock_response():
             cased.policy_key = "cs_test_001"
 
@@ -434,7 +465,7 @@ class TestEvent(object):
                 {"per_page": 25, "phrase": "(action:test-event)"},
             )
 
-    def test_event_list_by_actor_request_api_key_can_be_overrode(self,):
+    def test_event_list_by_actor_request_api_key_can_be_overrode(self):
         with mock_response():
             cased.policy_key = "cs_test_001"
 
@@ -446,3 +477,4 @@ class TestEvent(object):
                 "alt_key",
                 {"per_page": 25, "phrase": "(actor:test)"},
             )
+

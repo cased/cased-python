@@ -47,6 +47,9 @@ clear_context_after_publishing = False
 # to publishing of event. Sensitive data characters will be replaced with `X`.
 redact_before_publishing = False
 
+# Whether or not to raise an exception, or just log, on errors during publish
+raise_on_publish_errors = True
+
 # =============================================================
 # Additional publishers
 # =============================================================
