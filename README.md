@@ -76,14 +76,14 @@ Record your first audit trail event using the `publish()` function on the `Event
 import cased
 
 cased.Event.publish({
-  event: "user.login",
-  location: "130.25.167.191",
-  request_id: "e851b3a7-9a16-4c20-ac7f-cbcdd3a9c183",
-  server: "app.fe1.disney.com",
-  session_id: "e2bd0d0e-165c-4e2a-b40b-8e2997fd7915",
-  user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36"
-  user_id: "User;1",
-  user: "mickeymouse",
+  "event": "user.login",
+  "location": "130.25.167.191",
+  "request_id": "e851b3a7-9a16-4c20-ac7f-cbcdd3a9c183",
+  "server": "app.fe1.disney.com",
+  "session_id": "e2bd0d0e-165c-4e2a-b40b-8e2997fd7915",
+  "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36"
+  "user_id": "User;1",
+  "user": "mickeymouse",
 })
 ```
 
