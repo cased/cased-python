@@ -6,7 +6,7 @@ from setuptools.command.test import test as TestCommand
 
 setup(
     name="cased",
-    version="0.3.6",
+    version="0.3.7",
     description="Python library for Cased",
     author="Cased",
     author_email="support@cased.com",
