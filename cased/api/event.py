@@ -66,13 +66,23 @@ class Event(ListableResource):
                 )
             )
 
-        log_info("Published to Cased: " + str(final_publish_data))
-
         try:
+            # Send to Cased
             response = requestor.request("post", "/", final_publish_data)
+            log_info("Sent to Cased: " + str(final_publish_data))
+
+            # Publish the item to any additional publishers
+            additional_publishers = cased.additional_publishers
+            for publisher in additional_publishers:
+                try:
+                    publisher.publish(final_publish_data)
+                except AttributeError:
+                    raise PublisherException("Publisher must implement publish()")
+
         except Exception as e:
             log_error(e)
-            raise
+            if cased.raise_on_publish_errors:
+                raise
         finally:
             if cased.clear_context_after_publishing:
                 cased.context.clear()
@@ -98,3 +108,7 @@ class Event(ListableResource):
     @classmethod
     def klass(cls):
         return cls
+
+
+class PublisherException(Exception):
+    pass

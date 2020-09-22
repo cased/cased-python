@@ -18,6 +18,19 @@ class SimpleReliabilityBackend(AbstractReliabilityBackend):
         return True
 
 
+class MockPublisher(object):
+    def __init__(self):
+        pass
+
+    def publish(self, data):
+        return {}
+
+
+class EmptyClass:
+    def __init__(self):
+        pass
+
+
 # HTTP Response Mock
 def mock_response(
     status_code=200, content="response content", headers={}, json_data=None, **params
