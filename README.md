@@ -13,7 +13,13 @@
 
 ## Installation
 
-Until open-source release, you can install `cased-python` directly from the repository. It's available for vendoring,
+Install from [PyPI](https://pypi.org/project/cased):
+
+```
+pip3 install cased
+```
+
+You can install `cased-python` directly from the repository. It's available for vendoring,
 self-hosting, or bundling with your application.
 
 ```
