@@ -63,6 +63,15 @@ class TestConfig(object):
             "secondary": "policy_test_2",
         }
 
+    def test_extra_ua_data_defaults_to_none(self):
+        reload_config()
+        assert cased.extra_ua_data is None
+
+    def test_extra_ua_data_can_be_set(self):
+        reload_config()
+        cased.extra_ua_data = "library wrap"
+        assert cased.extra_ua_data == "library wrap"
+
     def test_clear_after_publish_default_to_false(self):
         assert not cased.clear_context_after_publishing
 

@@ -50,6 +50,9 @@ redact_before_publishing = False
 # Whether or not to raise an exception, or just log, on errors during publish
 raise_on_publish_errors = True
 
+# Allow extra user-agent data
+extra_ua_data = None
+
 # =============================================================
 # Additional publishers
 # =============================================================

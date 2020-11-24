@@ -8,9 +8,14 @@ class HTTPClient:
     @classmethod
     def make_request(cls, method, url, api_key, data=None):
 
+        user_agent = "cased-python/{}".format(cased.VERSION)
+
+        if cased.extra_ua_data:
+            user_agent = user_agent + " ({})".format(cased.extra_ua_data)
+
         headers = {
             "Authorization": "Bearer " + api_key,
-            "User-Agent": "cased-python/{}".format(cased.VERSION),
+            "User-Agent": user_agent,
         }
 
         if method == "get":

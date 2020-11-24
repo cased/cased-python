@@ -6,10 +6,10 @@
 
 | Contents                         |
 | :------------------------------- |
-| [Installation](##installation)   |
-| [Configuration](##configuration) |
-| [How To Guide](##usage-guide)    |
-| [Tests](##tests)                 |
+| [Installation](#installation)    |
+| [Configuration](#configuration)  |
+| [How To Guide](#how-to-guide)    |
+| [Contributing](#contributing)    |
 
 ## Installation
 
